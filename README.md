@@ -6,6 +6,7 @@ This repo contains a Flask API for seating groups of attendees to a given rank
 Before running the application you will need to create a `.env` file at the root of the project with the following values:
 
 ```bash
+HOST=0.0.0.0
 PORT=8080
 
 MONGO_HOST=localhost
@@ -33,7 +34,7 @@ This will install only the dependencies required to run the server. To boot up t
 default server, you can run:
 
 ```bash
-bash bin/run.sh
+hypercorn src:app --bind 0.0.0.0:8080 --log-level=debug --workers=4
 ```
 
 Alternatively the following `make` commands will perform the setup for you:
@@ -44,11 +45,8 @@ make install
 make start
 ```
 
-This will start a [Gunicorn](https://gunicorn.org/) server that wraps the Flask app 
-defined in `src/app.py`. Note that [this is one of the recommended ways of deploying a
-Flask app 'in production'](https://flask.palletsprojects.com/en/1.1.x/deploying/wsgi-standalone/). 
-The server shipped with Flask is [intended for development
-purposes only](https://flask.palletsprojects.com/en/1.1.x/deploying/#deployment).  
+This will start a Hypercorn ASGI server that wraps the Flask app 
+defined in `src/app.py`.
 
 You should now be able to send:
 

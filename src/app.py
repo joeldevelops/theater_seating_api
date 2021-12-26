@@ -1,4 +1,5 @@
-from flask import Flask, Response, json, jsonify, request
+import quart.flask_patch
+from quart import Quart, Response
 from flask_mongoengine import MongoEngine
 
 from .errors import errors
@@ -6,7 +7,7 @@ from .seats import seats
 from .venue import venue
 from .wallet import wallet
 
-app = Flask(__name__)
+app = Quart(__name__)
 app.register_blueprint(errors)
 app.register_blueprint(seats)
 app.register_blueprint(venue)
@@ -23,13 +24,14 @@ def index():
 
 
 @app.route("/health")
-def healthy():
+async def healthy():
     try:
         connection = db.connection.get_database("theater_seating_db")
-        res = connection.command(
+        connection.command(
             "dbStats"
         )  # validate db is working
-    except:
+    except Exception as e:
+        print(e)
         return Response("Unable to contact the DB", 500)
 
     return Response("ok", status=200)

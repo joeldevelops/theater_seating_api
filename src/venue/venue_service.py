@@ -1,7 +1,7 @@
 from .venue_models import *
 
 
-def create_venue(name, sections):
+async def create_venue(name, sections):
     """
     Take in venue name and create named sections in the document
     """
@@ -14,7 +14,7 @@ def create_venue(name, sections):
     return venue
 
 
-def get_venue(id):
+async def get_venue(id):
     """
     Return a venue by ID.
 

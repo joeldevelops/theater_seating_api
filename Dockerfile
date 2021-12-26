@@ -6,7 +6,6 @@ RUN pip install -U pip && pip install -r requirements/common.txt
 COPY ./src /app/src
 COPY ./bin /app/bin
 COPY config.py /app/config.py
-COPY wsgi.py /app/wsgi.py
 WORKDIR /app
 
 RUN useradd theater_api
