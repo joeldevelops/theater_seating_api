@@ -1,4 +1,5 @@
 from .seats_models import Seat
+from .seating_class import Seating
 
 
 async def create_seats(seats_info):
@@ -58,30 +59,10 @@ async def seat_groups(groups, rank):
     :groups: an array of groups to seat in the order to seat them.
     :rank: represents the seats for a given rank as a 2d array.
     """
-    row = 0
-    column = 0
-    group_count = 0
-    rtl = row % 2 == 0  # Right to left on even rows
-    for group in groups:
-        group_count += 1
-        for i in range(group):
-            rank[row][column] = group_count
+    seating = Seating(groups, rank)
+    for i in range(len(rank)):
+        await seating.seat_row()
 
-            if rtl:
-                column += 1
-            else:
-                column -= 1
-
-            end_of_row = column > len(rank[row]) - 1 or column < 0
-            if end_of_row:
-                row += 1
-                rtl = row % 2 == 0
-
-                # columns could be various sizes within the same rank.
-                # reset when going left to right to ensure proper size.
-                if column != 0 and row < len(rank) - 1:
-                    column = len(rank[row]) - 1
-                elif column < 0:
-                    column = 0
+    print(seating.rank_seating_layout())
 
     return rank

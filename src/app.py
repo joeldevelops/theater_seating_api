@@ -1,5 +1,5 @@
 import quart.flask_patch
-from quart import Quart, Response
+from quart import Quart, Response, jsonify
 from flask_mongoengine import MongoEngine
 
 from .errors import errors
@@ -8,7 +8,7 @@ from .venue import venue
 from .wallet import wallet
 
 app = Quart(__name__)
-app.register_blueprint(errors)
+# app.register_blueprint(errors)
 app.register_blueprint(seats)
 app.register_blueprint(venue)
 app.register_blueprint(wallet)
@@ -19,8 +19,15 @@ db = MongoEngine()
 db.init_app(app)
 
 @app.route("/")
-def index(): 
-    return Response("Index route not setup", 200)
+def index():
+    stuff = {
+      'groups': [1, 3, 4, 4, 5, 1, 2, 4],
+      'rank': [[1, 2, 3, 4, 5, 6, 7, 8],
+              [1, 2, 3, 4, 5, 6, 7, 8],
+              [1, 2, 3, 4, 5, 6, 7, 8]]
+    }
+    return jsonify(stuff), 200
+    # return Response("Index route not setup", 200)
 
 
 @app.route("/health")

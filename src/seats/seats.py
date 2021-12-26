@@ -1,11 +1,11 @@
 from quart import Blueprint, Response, jsonify, request
 
-seats = Blueprint("seating", __name__, url_prefix="/seats")
+seats = Blueprint("seating", __name__)
 
 from .seats_service import *
 
 
-@seats.route("", methods=["GET"])
+@seats.route("/seats", methods=["GET"])
 async def get_seats():
     """
     Get seats for a venue by passing in a venue_id
@@ -23,7 +23,7 @@ async def get_seats():
     return jsonify(seats), 200
 
 
-@seats.route("/<id>", methods=["GET"])
+@seats.route("/seats/<id>", methods=["GET"])
 async def get_seat_by_id(id):
     """
     Get seat by ID
@@ -32,7 +32,7 @@ async def get_seat_by_id(id):
     return jsonify(seat), 200
 
 
-@seats.route("", methods=["POST"])
+@seats.route("/seats", methods=["POST"])
 async def add_seats_by_rank():
     """
     Accept array of seats to batch write. Part of venue initialization.
@@ -48,7 +48,7 @@ async def add_seats_by_rank():
     return Response("ok", status=201)
 
 
-@seats.route("/order/", methods=["POST"])
+@seats.route("/seats/order", methods=["POST"])
 async def seating_order():
     """
     Load seats from DB and seat specified groups in the best possible way.
@@ -71,7 +71,7 @@ async def seating_order():
     return jsonify(seating), 200
 
 
-@seats.route("/order_simple/", methods=["POST"])
+@seats.route("/seats/order_simple", methods=["POST"])
 async def seating_order_simple():
     """
     Simple method that takes in groups and rank array to seat without db interaction.
