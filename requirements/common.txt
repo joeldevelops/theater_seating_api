@@ -1,4 +1,4 @@
-flask
 flask-mongoengine
-gunicorn
+hypercorn
 python-dotenv
+quart

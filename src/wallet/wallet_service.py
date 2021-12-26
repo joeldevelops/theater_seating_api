@@ -1,7 +1,6 @@
 from .wallet_models import Entitlement
 
-
-def add_user_entitlements(details):
+async def add_user_entitlements(details):
     """
     Take in the details of a ticket/entitlement and save to DB.
     """
@@ -11,7 +10,7 @@ def add_user_entitlements(details):
     return entitlement
 
 
-def get_entitlements_by_user(user_id):
+async def get_entitlements_by_user(user_id):
     """
     Returns list of entitlements by owning user
 

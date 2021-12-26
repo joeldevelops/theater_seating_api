@@ -13,7 +13,7 @@ check-style:
 	@flake8 orion --count --show-source --statistics --ignore=E203,W503
 
 start:
-	@bash bin/run.sh
+	@hypercorn src:app --bind 0.0.0.0:8080 --log-level=debug --workers=4
 
 venv:
 	@virtualenv venv

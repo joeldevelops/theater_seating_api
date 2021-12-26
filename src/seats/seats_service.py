@@ -1,7 +1,7 @@
 from .seats_models import Seat
 
 
-def create_seats(seats_info):
+async def create_seats(seats_info):
     """
     Create a seat in the DB
     """
@@ -14,7 +14,7 @@ def create_seats(seats_info):
     Seat.objects.insert(seat_instances, load_bulk=False)
 
 
-def get_seat(id):
+async def get_seat(id):
     """
     Get seat by ObjectID
     """
@@ -22,7 +22,7 @@ def get_seat(id):
     return seat
 
 
-def get_seats(filter):
+async def get_seats(filter):
     """
     Generic mehtod to load seats with a filter
 
@@ -32,7 +32,7 @@ def get_seats(filter):
     return seats
 
 
-def seat_rank_to_layout(venue_id, rank):
+async def seat_rank_to_layout(venue_id, rank):
     """
     Loads seat documents from the DB and convert them to a rank layout
 
@@ -51,7 +51,7 @@ def seat_rank_to_layout(venue_id, rank):
     return layout
 
 
-def seat_groups(groups, rank):
+async def seat_groups(groups, rank):
     """
     Take in an array of groups and a rank layout to sit them in.
 
