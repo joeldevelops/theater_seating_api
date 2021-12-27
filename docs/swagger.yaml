@@ -1,29 +1,194 @@
-openapi: 3.0.0
 info:
-  title: Minimal Flask API Example
-  description: This file is for demonstration purposes only, you should fill in your own details.
+  title: Theater Seating API
+  description: This is an API for seating groups of users at a given venue.
   version: 0.0.0
 servers:
-  - url: http://localhost:5000
-    description: This is a dummy value describing the base URL for the API.
+  - url: http://localhost:8080
+    description: Local endpoint.
 paths:
-  /:
-    get:
-      summary: Returns the default response from the API.
-      description: Optional extended description in CommonMark or HTML.
-      responses:
-        '200':    # status code
-          description: The default response.
-          content:
-            text/plain:
-              "Hello, world"
   /health:
     get:
-      summary: Used to check the API is responsive.
-      description: Optional extended description in CommonMark or HTML.
+      tags:
+        - "app"
+      summary: Used to check the API is responsive and the DB is connected.
       responses:
         '200':    # status code
           description: The default response.
           content:
             text/plain:
               "OK"
+  /seats:
+    post:
+      tags:
+        - "seats"
+      summary: Used to create a batch of seats
+      parameters:
+        - name: "rank"
+          in: "body"
+          required: true
+          type: "string"
+        - name: "seats"
+          in: "body"
+          required: true
+          type: "array"
+      responses:
+        '201':
+          text/plain:
+            "OK"
+  /seats/venue/{venue_id}:
+    get:
+      tags:
+        - "seats"
+      summary: Get seats for a given venue.
+      parameters:
+        - name: "venue_id"
+          in: "path"
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: "#/definitions/Seat"
+  /seats/order:
+    post:
+      tags:
+        - "seats"
+      summary: Seat groups of users.
+      parameters:
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/SeatOrderBody"
+      responses:
+        '200':
+          type: "array"
+  /venue:
+    get:
+      tags:
+        - "venue"
+      summary: Get all venues currently in the DB.
+      responses:
+        '200':
+          schema:
+            $ref: "#/definitions/Venue"
+    post:
+      tags:
+        - "venue"
+      summary: Create a new Venue.
+      parameters:
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/NewVenue"
+      responses:
+        '201':
+          text/plain:
+            "OK"
+  /venue/{id}:
+    get:
+      tags:
+        - "venue"
+      summary: Get venue by ID.
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: "#/definitions/Venue"
+  /wallet/{user_id}:
+    get:
+      tags:
+        - "wallet"
+      summary: Get a user's entitlements.
+      parameters:
+        - name: "user_id"
+          in: "path"
+          required: true
+      responses:
+        '200':
+          schema:
+            $ref: "#/definitions/Entitlements"
+    post:
+      tags:
+        - "wallet"
+      summary: Create a new entitlement for a user.
+      parameters:
+        - name: "body"
+          in: "body"
+      responses:
+        '201':
+          text/plain:
+            "OK"
+definitions:
+  Seat:
+    type: "object"
+    properties:
+      venue_id:
+        type: "string"
+      section:
+        type: "string"
+      row:
+        type: "string"
+      seat_number:
+        type: "string"
+      row:
+        type: "string"
+      rank:
+        type: "string"
+      modifiers:
+        type: "array"
+  Venue:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+      section_name:
+        type: "object"
+        properties:
+          name:
+            type: "string"
+          floor:
+            type: "string"
+          total_seats:
+            type: "int64"
+          curved:
+            type: "boolean"
+  NewVenue:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+      sections:
+        type: "array"
+  Entitlement:
+    type: "object"
+    properties:
+      venue_id:
+        type: "string"
+      user_id:
+        type: "int64"
+      event_id:
+        type: "string"
+      rank:
+        type: "string"
+      preference:
+        type: "string"
+    SeatOrderBody:
+      type: "object"
+      properties:
+        venue_id:
+          type: "string"
+        rank:
+          type: "string"
+        groups:
+          description: The array of groups to seat
+          type: "array"
+        prefs:
+          type: "object"
+          properties:
+            number:
+              description: The groups preferences for seating, uses the groups index to map
+              type: string
