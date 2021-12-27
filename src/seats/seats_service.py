@@ -1,4 +1,9 @@
+from bson.objectid import ObjectId
+
 from .seats_models import Seat
+from .seating_class import Seating
+
+from ..wallet.wallet_service import create_user_entitlements
 
 
 async def create_seats(seats_info):
@@ -14,74 +19,59 @@ async def create_seats(seats_info):
     Seat.objects.insert(seat_instances, load_bulk=False)
 
 
-async def get_seat(id):
+async def get_seats(venue_id):
     """
-    Get seat by ObjectID
-    """
-    seat = Seat.objects(id=id).first()
-    return seat
-
-
-async def get_seats(filter):
-    """
-    Generic mehtod to load seats with a filter
+    Generic method to load seats with a filter
 
     :filter: filter down the returned seats by venue_id, rank, and/or row.
+    :return: seats document
     """
-    seats = Seat.objects(**filter)
-    return seats
+    venue_seats = Seat.objects(venue_id=ObjectId(venue_id))
+    return venue_seats
 
 
 async def seat_rank_to_layout(venue_id, rank):
     """
     Loads seat documents from the DB and convert them to a rank layout
 
-    :return: 2D array of the layout
+    :venue_id: ID of the venue to get seats from
+    :rank: The rank within the venue to seat
+    :return: 2D array of the layout as seat documents
     """
-    seats = Seat.objects(venue_id=venue_id, rank=rank).order_by("+row", "+seat_number")
+    seats = Seat.objects(venue_id=ObjectId(venue_id), rank=rank).order_by("+row", "+seat_number")
     row = 0
     layout = [[]]
-    for seat, i in seats:
-        if i > 0 and seat.row != seats[i - 1]:
+    for i in range(len(seats)):
+        if i > 0 and seats[i].row != seats[i - 1].row:
             row += 1
             layout.append([])
 
-        layout[row].append(seat)
+        seat = seats[i].to_mongo()
+        seat_obj = seat.to_dict()
+        del seat_obj["_id"]
+        layout[row].append(seat_obj)
 
     return layout
 
 
-async def seat_groups(groups, rank):
+async def seat_groups(groups, rank, prefs):
     """
     Take in an array of groups and a rank layout to sit them in.
 
     :groups: an array of groups to seat in the order to seat them.
     :rank: represents the seats for a given rank as a 2d array.
     """
-    row = 0
-    column = 0
-    group_count = 0
-    rtl = row % 2 == 0  # Right to left on even rows
-    for group in groups:
-        group_count += 1
-        for i in range(group):
-            rank[row][column] = group_count
+    seating = Seating(groups, rank, prefs)
+    for i in range(len(rank)):
+        row_placement = await seating.seat_row()
+        updated_placement = await seating.group_preference(i, row_placement)
+        for group in updated_placement:
+            await seating.seat_group(group["size"], group["position"])
 
-            if rtl:
-                column += 1
-            else:
-                column -= 1
+    for r in range(len(rank)):
+        for c in range(len(rank[r])):
+            await create_user_entitlements(rank[r][c])
 
-            end_of_row = column > len(rank[row]) - 1 or column < 0
-            if end_of_row:
-                row += 1
-                rtl = row % 2 == 0
+    result = seating.print_layout()
 
-                # columns could be various sizes within the same rank.
-                # reset when going left to right to ensure proper size.
-                if column != 0 and row < len(rank) - 1:
-                    column = len(rank[row]) - 1
-                elif column < 0:
-                    column = 0
-
-    return rank
+    return result

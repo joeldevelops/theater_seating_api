@@ -9,5 +9,4 @@ class Seat(db.Document):
     seat_number = db.StringField(required=True)
     rank = db.StringField(required=True)
     row = db.StringField(required=True)
-    aisle_seat = db.BooleanField(default=False)
-    front_row = db.BooleanField(default=False)
+    modifiers = db.ListField(db.StringField(), default=[])

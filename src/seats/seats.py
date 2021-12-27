@@ -1,38 +1,28 @@
 from quart import Blueprint, Response, jsonify, request
 
-seats = Blueprint("seating", __name__, url_prefix="/seats")
+seats = Blueprint("seating", __name__)
 
 from .seats_service import *
 
 
-@seats.route("", methods=["GET"])
-async def get_seats():
+@seats.route("/seats/venue/<venue_id>", methods=["GET"], strict_slashes=False)
+async def seats_by_query(venue_id):
     """
     Get seats for a venue by passing in a venue_id
 
     :venue_id: passed in as a query param to the method
     :return: Array of Seat documents
     """
-    query_params = await request.args
-    if not query_params.get("venue_id"):
+    if not venue_id:
         return Response(
             "venue_id is a required query param for this method", status=400
         )
 
-    seats = await get_seats(query_params)
-    return jsonify(seats), 200
+    venue_seats = await get_seats(venue_id)
+    return jsonify(venue_seats), 200
 
 
-@seats.route("/<id>", methods=["GET"])
-async def get_seat_by_id(id):
-    """
-    Get seat by ID
-    """
-    seat = await get_seat(id)
-    return jsonify(seat), 200
-
-
-@seats.route("", methods=["POST"])
+@seats.route("/seats", methods=["POST"], strict_slashes=False)
 async def add_seats_by_rank():
     """
     Accept array of seats to batch write. Part of venue initialization.
@@ -48,7 +38,7 @@ async def add_seats_by_rank():
     return Response("ok", status=201)
 
 
-@seats.route("/order/", methods=["POST"])
+@seats.route("/seats/order", methods=["POST"], strict_slashes=False)
 async def seating_order():
     """
     Load seats from DB and seat specified groups in the best possible way.
@@ -56,6 +46,7 @@ async def seating_order():
     :venue_id: The ID of the venue to do the seating for.
     :rank: The rank in the venue to seat.
     :groups: The specified array of groups to seat. Array of numbers with each int representing group size.
+    :prefs: An object containing keys that map to a groups preferences.
     :return: 2D array of sat groups.
     """
     body = await request.get_json()
@@ -65,26 +56,7 @@ async def seating_order():
     if not body["groups"]:
         return Response("Array of groups to sit must be supplied", status=400)
 
-    rank_layout = await seat_rank_to_layout(venue_id=body["venue_id"], rank=body["rank"])
-    seating = await seat_groups(groups=body["groups"], rank=rank_layout)
-
-    return jsonify(seating), 200
-
-
-@seats.route("/order_simple/", methods=["POST"])
-async def seating_order_simple():
-    """
-    Simple method that takes in groups and rank array to seat without db interaction.
-    Allows testing of algorithm.
-    """
-    body = await request.get_json()
-
-    if not body["groups"]:
-        return Response("groups is a required field", 400)
-
-    if not body["rank"]:
-        return Response("rank is a required field", 400)
-
-    seating = await seat_groups(groups=body["groups"], rank=body["rank"])
+    rank_layout = await seat_rank_to_layout(body["venue_id"], body["rank"])
+    seating = await seat_groups(body["groups"], rank_layout, body["prefs"])
 
     return jsonify(seating), 200

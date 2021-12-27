@@ -1,3 +1,9 @@
 # Example cURL requests for local testing
 
 curl -X POST -H "Content-Type: application/json" -d '{"name":"bingus hall","sections":[{"floor":"0","name":"main hall","total_seats":20}]}' localhost:8080/venue
+
+curl -X POST -H "Content-Type: application/json" -d '{"groups":[1,3,4,4,5,1,2,4],"rank":[[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0]]}' localhost:8080/seats/order_simple
+
+curl -X POST -H "Content-Type: application/json" -d '{"groups":[1,3,4,4,5,1,2,4],"rank":"1","venue_id":"61c95f272ae66f3472c7f6e4"}' localhost:8080/seats/order
+
+curl -X POST -H "Content-Type: application/json" -d '{"groups":[1,3,4,4,5,1,2,4],"rank":"1","venue_id":"61c95f272ae66f3472c7f6e4", "prefs":{"2":"aisle"}}' localhost:8080/seats/order
