@@ -1,3 +1,5 @@
+from bson.objectid import ObjectId
+
 from .seats_models import Seat
 from .seating_class import Seating
 
@@ -15,39 +17,38 @@ async def create_seats(seats_info):
     Seat.objects.insert(seat_instances, load_bulk=False)
 
 
-async def get_seat(id):
+async def get_seats(venue_id):
     """
-    Get seat by ObjectID
-    """
-    seat = Seat.objects(id=id).first()
-    return seat
-
-
-async def get_seats(filter):
-    """
-    Generic mehtod to load seats with a filter
+    Generic method to load seats with a filter
 
     :filter: filter down the returned seats by venue_id, rank, and/or row.
+    :return: seats document
     """
-    seats = Seat.objects(**filter)
-    return seats
+    venue_seats = Seat.objects(venue_id=ObjectId(venue_id))
+    return venue_seats
 
 
 async def seat_rank_to_layout(venue_id, rank):
     """
     Loads seat documents from the DB and convert them to a rank layout
 
-    :return: 2D array of the layout
+    :venue_id: ID of the venue to get seats from
+    :rank: The rank within the venue to seat
+    :return: 2D array of the layout as seat documents
     """
-    seats = Seat.objects(venue_id=venue_id, rank=rank).order_by("+row", "+seat_number")
+    seats = Seat.objects(venue_id=ObjectId(venue_id), rank=rank).order_by("+row", "+seat_number")
     row = 0
     layout = [[]]
-    for seat, i in seats:
-        if i > 0 and seat.row != seats[i - 1]:
+    for i in range(len(seats)):
+        if i > 0 and seats[i].row != seats[i - 1].row:
             row += 1
             layout.append([])
 
-        layout[row].append(seat)
+        seat = seats[i].to_mongo()
+        seat_obj = seat.to_dict()
+        del seat_obj["_id"]
+        del seat_obj["venue_id"]
+        layout[row].append(seat_obj)
 
     return layout
 
@@ -61,8 +62,11 @@ async def seat_groups(groups, rank):
     """
     seating = Seating(groups, rank)
     for i in range(len(rank)):
-        await seating.seat_row()
+        row_placement = await seating.seat_row()
+        updated_placement = await seating.group_preference(i, row_placement)
+        for group in updated_placement:
+            await seating.seat_group(group["size"], group["position"])
 
-    print(seating.rank_seating_layout())
+    seating.print_layout()
 
     return rank

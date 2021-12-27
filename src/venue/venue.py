@@ -2,10 +2,9 @@ from quart import Blueprint, Response, jsonify, request
 
 from .venue_service import *
 
-venue = Blueprint("venue", __name__)
+venue = Blueprint("venues", __name__)
 
-
-@venue.route("/venue", methods=["POST"])
+@venue.route("/venue", methods=["POST"], strict_slashes=False)
 async def add_venue():
     """
     Create a new venue representation for the API.
@@ -16,8 +15,8 @@ async def add_venue():
     return jsonify(venue), 201
 
 
-@venue.route("/venue/<id>", methods=["GET"])
-async def get_venue_by_id(id):
+@venue.route("/venue/<id>", methods=["GET"], strict_slashes=False)
+async def venue_by_id(id):
     """
     Return a venue by ID.
 
