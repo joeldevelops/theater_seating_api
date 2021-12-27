@@ -3,6 +3,7 @@ import os
 import asyncio
 from quart import Quart, Response, jsonify
 from flask_mongoengine import MongoEngine
+from flasgger import Swagger
 
 from .errors import errors
 from .seats import seats, create_seats
@@ -16,6 +17,8 @@ app.register_blueprint(venue)
 app.register_blueprint(wallet)
 
 app.config.from_object("config")
+
+swagger = Swagger(app, template_file="../docs/swagger.yaml")
 
 db = MongoEngine()
 db.init_app(app)
