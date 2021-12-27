@@ -46,6 +46,7 @@ async def seating_order():
     :venue_id: The ID of the venue to do the seating for.
     :rank: The rank in the venue to seat.
     :groups: The specified array of groups to seat. Array of numbers with each int representing group size.
+    :prefs: An object containing keys that map to a groups preferences.
     :return: 2D array of sat groups.
     """
     body = await request.get_json()
@@ -56,6 +57,6 @@ async def seating_order():
         return Response("Array of groups to sit must be supplied", status=400)
 
     rank_layout = await seat_rank_to_layout(body["venue_id"], body["rank"])
-    seating = await seat_groups(body["groups"], rank_layout)
+    seating = await seat_groups(body["groups"], rank_layout, body["prefs"])
 
     return jsonify(seating), 200

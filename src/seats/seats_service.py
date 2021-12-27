@@ -3,6 +3,8 @@ from bson.objectid import ObjectId
 from .seats_models import Seat
 from .seating_class import Seating
 
+from ..wallet.wallet_service import create_user_entitlements
+
 
 async def create_seats(seats_info):
     """
@@ -47,26 +49,29 @@ async def seat_rank_to_layout(venue_id, rank):
         seat = seats[i].to_mongo()
         seat_obj = seat.to_dict()
         del seat_obj["_id"]
-        del seat_obj["venue_id"]
         layout[row].append(seat_obj)
 
     return layout
 
 
-async def seat_groups(groups, rank):
+async def seat_groups(groups, rank, prefs):
     """
     Take in an array of groups and a rank layout to sit them in.
 
     :groups: an array of groups to seat in the order to seat them.
     :rank: represents the seats for a given rank as a 2d array.
     """
-    seating = Seating(groups, rank)
+    seating = Seating(groups, rank, prefs)
     for i in range(len(rank)):
         row_placement = await seating.seat_row()
         updated_placement = await seating.group_preference(i, row_placement)
         for group in updated_placement:
             await seating.seat_group(group["size"], group["position"])
 
-    seating.print_layout()
+    for r in range(len(rank)):
+        for c in range(len(rank[r])):
+            await create_user_entitlements(rank[r][c])
 
-    return rank
+    result = seating.print_layout()
+
+    return result

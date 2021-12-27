@@ -24,3 +24,14 @@ async def venue_by_id(id):
     """
     venue = await get_venue(id=id)
     return jsonify(venue), 200
+
+
+@venue.route("/venue", methods=["GET"], strict_slashes=False)
+async def all_venues():
+    """
+    Return all venues.
+
+    :return: Venues
+    """
+    venue = await get_all_venues()
+    return jsonify(venue), 200

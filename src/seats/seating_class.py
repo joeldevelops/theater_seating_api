@@ -1,23 +1,20 @@
 class Seating:
-    def __init__(self, groups, layout):
+    def __init__(self, groups, layout, prefs):
         self.row = 0
         self.column = 0
         self.groups = [] # treat groups like a queue
         self.layout = layout
+        self.prefs = prefs
 
         for i in range(len(groups)):
-            if type(groups[i]) is list:
-                self.groups.append({
-                  'size': groups[i][1],
-                  'position': i+1,
-                  'preference': groups[i][0]
-                })
-            else:
-                self.groups.append({
-                  'size': groups[i],
-                  'position': i+1,
-                  'preference': None
-                })
+            pref = None
+            if str(i+1) in self.prefs:
+                pref = self.prefs[str(i+1)]
+            self.groups.append({
+              'size': groups[i],
+              'position': i+1,
+              'preference': pref
+            })
 
 
     def rtl(self):
@@ -29,13 +26,16 @@ class Seating:
 
 
     def print_layout(self):
+        result = []
         for r in range(len(self.layout)):
             row = []
             for c in range(len(self.layout[r])):
                 row.append(self.layout[r][c]["group"])
             
+            result.append(row)
             print(row)
 
+        return result
 
     def remaining_seats_in_row(self):
         """
@@ -127,8 +127,8 @@ class Seating:
                         if any(placement[i]["preference"] in m for m in row_modifiers[k]):
                             shuffle.append([i, k])
         
-        for group in range(len(shuffle)):
-            swap(group[0], group[1])
+        for n in range(len(shuffle)):
+            swap(shuffle[n][0], shuffle[n][1])
 
         return placement
 
@@ -142,6 +142,7 @@ class Seating:
         """
         for i in range(group_size):
             self.layout[self.row][self.column]["group"] = group_position
+            self.layout[self.row][self.column]["user_id"] = group_position
 
             if self.rtl():
                 self.column += 1

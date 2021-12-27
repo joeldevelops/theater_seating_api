@@ -22,3 +22,13 @@ async def get_venue(id):
     """
     venue = Venue.objects(id=id).first_or_404()
     return venue
+
+
+async def get_all_venues():
+    """
+    Return all venues.
+
+    :return: Venues
+    """
+    venue = Venue.objects()
+    return venue
