@@ -15,6 +15,10 @@ check-style:
 start:
 	@hypercorn src:app --bind 0.0.0.0:8080 --log-level=debug --workers=4
 
+start-dev:
+	@export QUART_APP=src
+	@quart run
+
 venv:
 	@virtualenv venv
 	@source venv/bin/activate
@@ -24,6 +28,9 @@ install:
 
 develop:
 	@pip install -r requirements/common.txt -r requirements/develop.txt
+
+init-db:
+	@docker exec theater_seating-theater_seating-1 quart initdb
 
 test:
 	@pytest tests
