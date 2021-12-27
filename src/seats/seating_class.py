@@ -63,10 +63,10 @@ class Seating:
         while row_sum < len(self.layout[self.row]) and len(self.groups) > 0:
             group = self.groups[0]
 
+            # Check if next item fits
             if group["size"] <= len(self.layout[self.row]) - row_sum:
                 row_placement.append(self.groups.pop(0))
                 row_sum += row_placement[-1]["size"]
-                # await self.seat_group(self.groups[i], i+1)
             else:
                 for k in range(len(self.groups)):
                     if self.groups[k]["size"] == len(self.layout[self.row]) - row_sum:
@@ -75,6 +75,7 @@ class Seating:
                         group_seats_allocated = True
                         break # favor equal size groups when possible
                 
+                # short-circuit if a group was sat
                 if group_seats_allocated:
                     group_seats_allocated = False
                     continue
@@ -96,6 +97,13 @@ class Seating:
 
 
     async def row_modifiers(self, row, placement):
+        """
+        Create list of row modifiers that will be used for finding preferences.
+
+        :row: the row to find prefs in.
+        :placement: The tentative placement of groups.
+        :return: 2D array matching group sizes
+        """
         options = []
         column = 0
         for i in range(len(placement)):
@@ -113,7 +121,8 @@ class Seating:
         Handles shuffling groups within a row to meet preferences.
         Shuffling does not happen outside of a row to preserve group order.
 
-        :row_placement: list of groups in row to shuffle
+        :row: current row to be seated
+        :placement: list of groups in row to shuffle
         :return: list of groups in row
         """
         def swap(i, n):
@@ -122,7 +131,9 @@ class Seating:
         shuffle = []
         for i in range(len(placement)):
             for k in range(len(row_modifiers)):
+                # Ignore checking the current group against itself
                 if placement[i]["position"] != placement[k]["position"]:
+                    # Groups with the same preference don't swap
                     if placement[i]["preference"] != placement[k]["preference"]:
                         if any(placement[i]["preference"] in m for m in row_modifiers[k]):
                             shuffle.append([i, k])
@@ -142,7 +153,7 @@ class Seating:
         """
         for i in range(group_size):
             self.layout[self.row][self.column]["group"] = group_position
-            self.layout[self.row][self.column]["user_id"] = group_position
+            self.layout[self.row][self.column]["user_id"] = group_position # for demo purposes
 
             if self.rtl():
                 self.column += 1
