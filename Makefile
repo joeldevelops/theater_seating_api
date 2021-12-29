@@ -30,7 +30,7 @@ develop:
 	@pip install -r requirements/common.txt -r requirements/develop.txt
 
 init-db:
-	@docker exec theater_seating-theater_seating-1 quart initdb
+	@docker exec theater_seating_api-theater_seating-1 quart initdb
 
 test:
 	@pytest tests
