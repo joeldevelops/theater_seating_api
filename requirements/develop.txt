@@ -1,4 +1,5 @@
-locust
 black
 isort
 pytest
+pytest-mock
+pytest-asyncio

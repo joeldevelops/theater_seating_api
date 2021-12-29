@@ -50,13 +50,17 @@ async def seating_order():
     :return: 2D array of sat groups.
     """
     body = await request.get_json()
+    prefs = {}
     if not body["venue_id"] or not body["rank"]:
         return Response("venue_id and rank are required fields", status=400)
 
     if not body["groups"]:
         return Response("Array of groups to sit must be supplied", status=400)
 
+    if "prefs" in body:
+        prefs = body["prefs"]
+
     rank_layout = await seat_rank_to_layout(body["venue_id"], body["rank"])
-    seating = await seat_groups(body["groups"], rank_layout, body["prefs"])
+    seating = await seat_groups(body["groups"], rank_layout, prefs)
 
     return jsonify(seating), 200

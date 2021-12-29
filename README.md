@@ -7,6 +7,7 @@ This repo contains a Flask API for seating groups of attendees to a given rank
   - [Running locally](#running-locally)
   - [Running with `docker`](#running-with-docker)
   - [Activating the Seating Algorithm](#activating-the-seating-algorithm)
+    - [Swagger](#swagger)
     - [Extra Step](#extra-step)
 - [Design Considerations and Decisions](#design-considerations-and-decisions)
   - [Flask and Quart](#flask-and-quart)
@@ -35,7 +36,7 @@ LOG_LEVEL=debug
 MONGO_HOST=localhost
 MONGO_PORT=27017
 MONGO_NAME=theater_seating_db
-MONGO_CONNECT_ON_STARTUP=True
+MONGO_CONNECT_ON_STARTUP=False
 ```
 
 ## Running locally
@@ -74,7 +75,7 @@ defined in `src/app.py`.
 You should now be able to send:
 
 ```bash
-curl localhost:5000/health
+curl localhost:8080/health
 ```
 
 And receive the response `OK` and status code `200`. This also has the added benefit of spinning up/checking the connection to the DB if no requests have been made yet.
@@ -94,6 +95,9 @@ docker compose up --build -d
 You should see the db image downloaded, the server boot up, and should be accessible as before.
 
 ## Activating the Seating Algorithm
+
+### Swagger
+All the below requests can also be activated by Swagger, pasting in the bodies from the cURL commands will work fine. Start the server and visit [the Swagger URL.](http://localhost:8080/apidocs/#/)
 
 As this codebase interacts with a MongoDB database there is an initial step required for a quick test run of the code. However this step is easy with the `make` command:
 
@@ -220,4 +224,9 @@ When a user clicks into their wallet on the site, a request is made to the DB to
 
 # Testing
 
-Tests are currently in progress for this repo.
+To run the unit tests, activate the virtual environment and then run the below commands:
+
+```bash
+pip install -r requirements/develop.txt
+pytest
+```

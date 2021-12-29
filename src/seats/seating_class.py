@@ -17,7 +17,7 @@ class Seating:
             })
 
 
-    def rtl(self):
+    def ltr(self):
         return self.row % 2 == 0 # Right to left on even rows
 
 
@@ -44,7 +44,7 @@ class Seating:
 
         :return: int
         """
-        if self.rtl():
+        if self.ltr():
             return len(self.layout[self.row]) - self.column
         else:
             return self.column + 1
@@ -116,6 +116,9 @@ class Seating:
         return options
 
 
+    # Note that this approach is not perfect and there are edge cases
+    # That don't allocate preferences. However as a trade off groups will
+    # always be preserved.
     async def group_preference(self, row, placement):
         """
         Handles shuffling groups within a row to meet preferences.
@@ -125,21 +128,30 @@ class Seating:
         :placement: list of groups in row to shuffle
         :return: list of groups in row
         """
-        def swap(i, n):
-            placement[i], placement[n] = placement[n], placement[i]
+        def swap(l, i, n):
+            l[i], l[n] = l[n], l[i]
+            return l
+        
         row_modifiers = await self.row_modifiers(row, placement)
         shuffle = []
+        duplicates = {}
+        seated_by_preference = [False] * len(placement)
         for i in range(len(placement)):
+            if placement[i]["preference"] is None:
+                continue # skip this group
             for k in range(len(row_modifiers)):
-                # Ignore checking the current group against itself
-                if placement[i]["position"] != placement[k]["position"]:
-                    # Groups with the same preference don't swap
-                    if placement[i]["preference"] != placement[k]["preference"]:
-                        if any(placement[i]["preference"] in m for m in row_modifiers[k]):
+                if any(placement[i]["preference"] in m for m in row_modifiers[k]):
+                    # Don't displace already shuffled users, since they have been
+                    # moved by preference. True in the list represents where a 
+                    # group will be moved to
+                    if not seated_by_preference[k]:
+                        seated_by_preference[k] = True
+                        duplicates[k] = i # de-dupe shuffle list
+                        if i not in duplicates:
                             shuffle.append([i, k])
         
         for n in range(len(shuffle)):
-            swap(shuffle[n][0], shuffle[n][1])
+            placement = swap(placement, shuffle[n][0], shuffle[n][1])
 
         return placement
 
@@ -155,7 +167,7 @@ class Seating:
             self.layout[self.row][self.column]["group"] = group_position
             self.layout[self.row][self.column]["user_id"] = group_position # for demo purposes
 
-            if self.rtl():
+            if self.ltr():
                 self.column += 1
             else:
                 self.column -= 1
