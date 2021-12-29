@@ -105,7 +105,11 @@ As this codebase interacts with a MongoDB database there is an initial step requ
 make init-db
 ```
 
-If you have your docker container running then the above command will run the `initdb` command within Quart to set up for the test run. This creates the 24 seats in 3 rows from the problem statement.
+If you have your docker container running then the above command will run the `initdb` command within Quart to set up for the test run. This creates the 24 seats in 3 rows from the problem statement. **Note** that if you cloned the repo under a different name then this command will not work, and instead you will need to run the following command:
+
+```bash
+docker exec <folder_name>-theater_seating-1 quart initdb
+```
 
 Next, we need to find the ObjectID of the venue that was created in the DB for us:
 
