@@ -110,7 +110,7 @@ paths:
       responses:
         '200':
           schema:
-            $ref: "#/definitions/Entitlements"
+            $ref: "#/definitions/Entitlement"
     post:
       tags:
         - "wallet"
@@ -176,19 +176,19 @@ definitions:
         type: "string"
       preference:
         type: "string"
-    SeatOrderBody:
-      type: "object"
-      properties:
-        venue_id:
-          type: "string"
-        rank:
-          type: "string"
-        groups:
-          description: The array of groups to seat
-          type: "array"
-        prefs:
-          type: "object"
-          properties:
-            number:
-              description: The groups preferences for seating, uses the groups index to map
-              type: string
+  SeatOrderBody:
+    type: "object"
+    properties:
+      venue_id:
+        type: "string"
+      rank:
+        type: "string"
+      groups:
+        description: The array of groups to seat
+        type: "array"
+      prefs:
+        type: "object"
+        properties:
+          number:
+            description: The groups preferences for seating, uses the groups index to map
+            type: string

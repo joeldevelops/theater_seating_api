@@ -1,1 +1,1 @@
-from .wallet import wallet
+from .wallet_controller import wallet

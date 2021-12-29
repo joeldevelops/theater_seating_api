@@ -1,7 +1,7 @@
 import quart.flask_patch
 import os
 import asyncio
-from quart import Quart, Response, jsonify
+from quart import Quart, Response
 from flask_mongoengine import MongoEngine
 from flasgger import Swagger
 
@@ -34,7 +34,7 @@ async def healthy():
         connection = db.connection.get_database("theater_seating_db")
         connection.command(
             "dbStats"
-        )  # validate db is working
+        )  # also enables connection on healthcheck instead of startup.
     except Exception as e:
         print(e)
         return Response("Unable to contact the DB", 500)
